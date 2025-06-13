@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -17,6 +16,11 @@ import Chat from "./pages/Chat";
 import Coach from "./pages/Coach";
 import Onboarding from "./pages/Onboarding";
 import NotFound from "./pages/NotFound";
+import RecruiterSignUp from "./pages/RecruiterSignUp";
+import RecruiterOnboarding from "./pages/RecruiterOnboarding";
+import RecruiterDashboard from "./pages/RecruiterDashboard";
+import PostJob from "./pages/PostJob";
+import Candidates from "./pages/Candidates";
 
 const queryClient = new QueryClient();
 
