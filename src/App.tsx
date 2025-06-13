@@ -40,6 +40,14 @@ const App = () => (
           <Route path="/jobs/:jobId" element={<JobDetail />} />
           <Route path="/chat" element={<Chat />} />
           <Route path="/coach" element={<Coach />} />
+          
+          {/* Recruiter Routes */}
+          <Route path="/recruiter-signup" element={<RecruiterSignUp />} />
+          <Route path="/recruiter-onboarding" element={<RecruiterOnboarding />} />
+          <Route path="/recruiter-dashboard" element={<RecruiterDashboard />} />
+          <Route path="/post-job" element={<PostJob />} />
+          <Route path="/candidates" element={<Candidates />} />
+          
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>

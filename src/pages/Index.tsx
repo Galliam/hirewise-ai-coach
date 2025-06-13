@@ -15,46 +15,56 @@ const Index = () => {
           <p className="text-gray-600">Your AI recruiting agent and personal job search coach</p>
         </div>
         
-        <div className="space-y-3">
-          <div className="flex items-center space-x-3 p-3 bg-white rounded-lg shadow-sm">
-            <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
-              <span className="text-blue-600 text-sm">🎯</span>
+        <div className="text-center space-y-6">
+          <div className="space-y-3">
+            <div className="flex items-center space-x-3 p-3 bg-white rounded-lg shadow-sm">
+              <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                <span className="text-blue-600 text-sm">🎯</span>
+              </div>
+              <p className="text-gray-700 text-sm">AI-powered job matching</p>
             </div>
-            <p className="text-gray-700 text-sm">AI-powered job matching</p>
+            
+            <div className="flex items-center space-x-3 p-3 bg-white rounded-lg shadow-sm">
+              <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                <span className="text-blue-600 text-sm">⚡</span>
+              </div>
+              <p className="text-gray-700 text-sm">One-click applications</p>
+            </div>
+            
+            <div className="flex items-center space-x-3 p-3 bg-white rounded-lg shadow-sm">
+              <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                <span className="text-blue-600 text-sm">🎓</span>
+              </div>
+              <p className="text-gray-700 text-sm">Personal coaching support</p>
+            </div>
           </div>
           
-          <div className="flex items-center space-x-3 p-3 bg-white rounded-lg shadow-sm">
-            <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
-              <span className="text-blue-600 text-sm">⚡</span>
+          <div className="space-y-4">
+            <div className="grid grid-cols-1 gap-3">
+              <Button 
+                onClick={() => navigate("/signup")}
+                size="lg" 
+                className="w-full bg-blue-600 hover:bg-blue-700 text-white py-4 text-lg"
+              >
+                Join as Job Seeker
+              </Button>
+              <Button 
+                onClick={() => navigate("/recruiter-signup")}
+                size="lg" 
+                variant="outline"
+                className="w-full border-blue-600 text-blue-600 hover:bg-blue-50 py-4 text-lg"
+              >
+                Join as Recruiter
+              </Button>
             </div>
-            <p className="text-gray-700 text-sm">One-click applications</p>
+            
+            <p className="text-sm text-gray-600">
+              Already have an account?{" "}
+              <Link to="/login" className="text-blue-600 hover:text-blue-700 font-medium">
+                Sign in
+              </Link>
+            </p>
           </div>
-          
-          <div className="flex items-center space-x-3 p-3 bg-white rounded-lg shadow-sm">
-            <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
-              <span className="text-blue-600 text-sm">🎓</span>
-            </div>
-            <p className="text-gray-700 text-sm">Personal coaching support</p>
-          </div>
-        </div>
-        
-        <div className="space-y-3">
-          <Button 
-            onClick={() => navigate("/signup")}
-            className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg text-lg font-medium"
-          >
-            Get Started
-          </Button>
-          
-          <p className="text-sm text-gray-600">
-            Already have an account?{" "}
-            <button 
-              onClick={() => navigate("/login")}
-              className="text-blue-600 hover:text-blue-700 font-medium"
-            >
-              Sign in
-            </button>
-          </p>
         </div>
       </div>
     </div>
