@@ -44,9 +44,9 @@ const SignUp = () => {
       setIsLoading(false);
       toast({
         title: "Account created!",
-        description: "Welcome to Hirewise. Let's set up your profile.",
+        description: "Welcome to Hirewise. Let's import your profile.",
       });
-      navigate("/onboarding");
+      navigate("/resume-upload");
     }, 1000);
   };
 
