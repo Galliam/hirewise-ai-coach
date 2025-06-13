@@ -1,4 +1,3 @@
-
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 
@@ -16,7 +15,7 @@ const Index = () => {
           <p className="text-gray-600">Your AI recruiting agent and personal job search coach</p>
         </div>
         
-        <div className="space-y-4 mb-8">
+        <div className="space-y-3">
           <div className="flex items-center space-x-3 p-3 bg-white rounded-lg shadow-sm">
             <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
               <span className="text-blue-600 text-sm">🎯</span>
@@ -39,12 +38,24 @@ const Index = () => {
           </div>
         </div>
         
-        <Button 
-          onClick={() => navigate("/onboarding")}
-          className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg text-lg font-medium"
-        >
-          Get Started
-        </Button>
+        <div className="space-y-3">
+          <Button 
+            onClick={() => navigate("/signup")}
+            className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg text-lg font-medium"
+          >
+            Get Started
+          </Button>
+          
+          <p className="text-sm text-gray-600">
+            Already have an account?{" "}
+            <button 
+              onClick={() => navigate("/login")}
+              className="text-blue-600 hover:text-blue-700 font-medium"
+            >
+              Sign in
+            </button>
+          </p>
+        </div>
       </div>
     </div>
   );
