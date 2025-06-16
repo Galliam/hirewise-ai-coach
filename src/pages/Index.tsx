@@ -1,9 +1,8 @@
+
 import { Button } from "@/components/ui/button";
-import { useNavigate, Link } from "react-router-dom";
+import { Link } from "react-router-dom";
 
 const Index = () => {
-  const navigate = useNavigate();
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
       <div className="max-w-md w-full text-center">
@@ -40,27 +39,18 @@ const Index = () => {
           </div>
           
           <div className="space-y-4">
-            <div className="grid grid-cols-1 gap-3">
+            <Link to="/auth">
               <Button 
-                onClick={() => navigate("/signup")}
                 size="lg" 
                 className="w-full bg-blue-600 hover:bg-blue-700 text-white py-4 text-lg"
               >
-                Join as Job Seeker
+                Get Started
               </Button>
-              <Button 
-                onClick={() => navigate("/recruiter-signup")}
-                size="lg" 
-                variant="outline"
-                className="w-full border-blue-600 text-blue-600 hover:bg-blue-50 py-4 text-lg"
-              >
-                Join as Recruiter
-              </Button>
-            </div>
+            </Link>
             
             <p className="text-sm text-gray-600">
               Already have an account?{" "}
-              <Link to="/login" className="text-blue-600 hover:text-blue-700 font-medium">
+              <Link to="/auth" className="text-blue-600 hover:text-blue-700 font-medium">
                 Sign in
               </Link>
             </p>

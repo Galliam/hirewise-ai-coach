@@ -4,10 +4,11 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { AuthProvider } from "@/hooks/useAuth";
+import ProtectedRoute from "@/components/ProtectedRoute";
 import Splash from "./pages/Splash";
 import Index from "./pages/Index";
-import Login from "./pages/Login";
-import SignUp from "./pages/SignUp";
+import Auth from "./pages/Auth";
 import ResumeUpload from "./pages/ResumeUpload";
 import Dashboard from "./pages/Dashboard";
 import Profile from "./pages/Profile";
@@ -17,7 +18,6 @@ import Chat from "./pages/Chat";
 import Coach from "./pages/Coach";
 import Onboarding from "./pages/Onboarding";
 import NotFound from "./pages/NotFound";
-import RecruiterSignUp from "./pages/RecruiterSignUp";
 import RecruiterOnboarding from "./pages/RecruiterOnboarding";
 import RecruiterDashboard from "./pages/RecruiterDashboard";
 import RecruiterActivity from "./pages/RecruiterActivity";
@@ -30,39 +30,167 @@ const queryClient = new QueryClient();
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Navigate to="/splash" replace />} />
-          <Route path="/splash" element={<Splash />} />
-          <Route path="/home" element={<Index />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/signup" element={<SignUp />} />
-          <Route path="/resume-upload" element={<ResumeUpload />} />
-          <Route path="/onboarding" element={<Onboarding />} />
-          <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/profile" element={<Profile />} />
-          <Route path="/jobs" element={<Jobs />} />
-          <Route path="/jobs/:jobId" element={<JobDetail />} />
-          <Route path="/chat" element={<Chat />} />
-          <Route path="/coach" element={<Coach />} />
-          
-          {/* Recruiter Routes */}
-          <Route path="/recruiter-signup" element={<RecruiterSignUp />} />
-          <Route path="/recruiter-onboarding" element={<RecruiterOnboarding />} />
-          <Route path="/recruiter-dashboard" element={<RecruiterDashboard />} />
-          <Route path="/recruiter-activity" element={<RecruiterActivity />} />
-          <Route path="/recruiter-chat" element={<RecruiterChat />} />
-          <Route path="/recruiter-stats" element={<RecruiterStats />} />
-          <Route path="/post-job" element={<PostJob />} />
-          <Route path="/candidates" element={<Candidates />} />
-          
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </BrowserRouter>
-    </TooltipProvider>
+    <AuthProvider>
+      <TooltipProvider>
+        <Toaster />
+        <Sonner />
+        <BrowserRouter>
+          <Routes>
+            <Route path="/" element={<Navigate to="/splash" replace />} />
+            <Route 
+              path="/splash" 
+              element={
+                <ProtectedRoute requireAuth={false}>
+                  <Splash />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/home" 
+              element={
+                <ProtectedRoute requireAuth={false}>
+                  <Index />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/auth" 
+              element={
+                <ProtectedRoute requireAuth={false}>
+                  <Auth />
+                </ProtectedRoute>
+              } 
+            />
+            
+            {/* Job Seeker Routes */}
+            <Route 
+              path="/resume-upload" 
+              element={
+                <ProtectedRoute userType="job_seeker">
+                  <ResumeUpload />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/onboarding" 
+              element={
+                <ProtectedRoute userType="job_seeker">
+                  <Onboarding />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/dashboard" 
+              element={
+                <ProtectedRoute userType="job_seeker">
+                  <Dashboard />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/profile" 
+              element={
+                <ProtectedRoute userType="job_seeker">
+                  <Profile />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/jobs" 
+              element={
+                <ProtectedRoute userType="job_seeker">
+                  <Jobs />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/jobs/:jobId" 
+              element={
+                <ProtectedRoute userType="job_seeker">
+                  <JobDetail />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/chat" 
+              element={
+                <ProtectedRoute userType="job_seeker">
+                  <Chat />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/coach" 
+              element={
+                <ProtectedRoute userType="job_seeker">
+                  <Coach />
+                </ProtectedRoute>
+              } 
+            />
+            
+            {/* Recruiter Routes */}
+            <Route 
+              path="/recruiter-onboarding" 
+              element={
+                <ProtectedRoute userType="recruiter">
+                  <RecruiterOnboarding />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/recruiter-dashboard" 
+              element={
+                <ProtectedRoute userType="recruiter">
+                  <RecruiterDashboard />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/recruiter-activity" 
+              element={
+                <ProtectedRoute userType="recruiter">
+                  <RecruiterActivity />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/recruiter-chat" 
+              element={
+                <ProtectedRoute userType="recruiter">
+                  <RecruiterChat />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/recruiter-stats" 
+              element={
+                <ProtectedRoute userType="recruiter">
+                  <RecruiterStats />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/post-job" 
+              element={
+                <ProtectedRoute userType="recruiter">
+                  <PostJob />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/candidates" 
+              element={
+                <ProtectedRoute userType="recruiter">
+                  <Candidates />
+                </ProtectedRoute>
+              } 
+            />
+            
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </BrowserRouter>
+      </TooltipProvider>
+    </AuthProvider>
   </QueryClientProvider>
 );
 

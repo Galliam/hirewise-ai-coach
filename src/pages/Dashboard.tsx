@@ -1,6 +1,7 @@
 
 import { Button } from "@/components/ui/button";
 import BottomNavigation from "@/components/BottomNavigation";
+import UserMenu from "@/components/UserMenu";
 import { useNavigate } from "react-router-dom";
 
 const Dashboard = () => {
@@ -10,10 +11,6 @@ const Dashboard = () => {
     { title: "Product Manager", company: "Tech Innovators Inc.", status: "Interviewing", applied: "2 days ago" },
     { title: "Senior Data Scientist", company: "Data Insights Corp.", status: "Rejected", applied: "1 week ago" },
     { title: "UX Designer", company: "WebWorks", status: "Screening", applied: "2 weeks ago" },
-  ];
-
-  const interests = [
-    { title: "Software Engineer Interest", recruiter: "Sarah Chen", company: "Mutual Naturals" },
   ];
 
   return (
@@ -27,9 +24,7 @@ const Dashboard = () => {
               </div>
               <h1 className="text-xl font-bold text-gray-900">Dashboard</h1>
             </div>
-            <button className="text-gray-600">
-              ⚙️
-            </button>
+            <UserMenu />
           </div>
         </div>
         
