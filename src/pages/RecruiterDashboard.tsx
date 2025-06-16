@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
-import BottomNavigation from "@/components/BottomNavigation";
+import RecruiterBottomNavigation from "@/components/RecruiterBottomNavigation";
 
 const RecruiterDashboard = () => {
   const navigate = useNavigate();
@@ -171,7 +171,7 @@ const RecruiterDashboard = () => {
         </div>
       </div>
       
-      <BottomNavigation />
+      <RecruiterBottomNavigation />
     </div>
   );
 };

@@ -1,3 +1,4 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -19,6 +20,9 @@ import NotFound from "./pages/NotFound";
 import RecruiterSignUp from "./pages/RecruiterSignUp";
 import RecruiterOnboarding from "./pages/RecruiterOnboarding";
 import RecruiterDashboard from "./pages/RecruiterDashboard";
+import RecruiterActivity from "./pages/RecruiterActivity";
+import RecruiterChat from "./pages/RecruiterChat";
+import RecruiterStats from "./pages/RecruiterStats";
 import PostJob from "./pages/PostJob";
 import Candidates from "./pages/Candidates";
 
@@ -49,6 +53,9 @@ const App = () => (
           <Route path="/recruiter-signup" element={<RecruiterSignUp />} />
           <Route path="/recruiter-onboarding" element={<RecruiterOnboarding />} />
           <Route path="/recruiter-dashboard" element={<RecruiterDashboard />} />
+          <Route path="/recruiter-activity" element={<RecruiterActivity />} />
+          <Route path="/recruiter-chat" element={<RecruiterChat />} />
+          <Route path="/recruiter-stats" element={<RecruiterStats />} />
           <Route path="/post-job" element={<PostJob />} />
           <Route path="/candidates" element={<Candidates />} />
           
