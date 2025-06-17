@@ -5,6 +5,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
 
 const PostJob = () => {
   const [formData, setFormData] = useState({
@@ -24,6 +26,7 @@ const PostJob = () => {
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { user } = useAuth();
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     setFormData(prev => ({
@@ -34,17 +37,52 @@ const PostJob = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!user) {
+      toast({
+        title: "Authentication Required",
+        description: "You must be logged in to post a job.",
+        variant: "destructive"
+      });
+      return;
+    }
+
     setIsLoading(true);
     
-    // Simulate job posting
-    setTimeout(() => {
-      setIsLoading(false);
+    try {
+      const { data, error } = await supabase
+        .from('jobs')
+        .insert({
+          title: formData.title,
+          department: formData.department,
+          location: formData.location,
+          job_type: formData.jobType,
+          description: `${formData.description}\n\nRequirements:\n${formData.requirements}${formData.benefits ? `\n\nBenefits:\n${formData.benefits}` : ''}`,
+          skills_required: formData.skills,
+          recruiter_id: user.id,
+          status: 'active'
+        })
+        .select()
+        .single();
+
+      if (error) throw error;
+
       toast({
         title: "Job Posted Successfully!",
         description: "Your job is now live and visible to candidates.",
       });
+      
       navigate("/recruiter-dashboard");
-    }, 1000);
+    } catch (error) {
+      console.error('Error posting job:', error);
+      toast({
+        title: "Error Posting Job",
+        description: "There was an error posting your job. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const skillSuggestions = ["JavaScript", "React", "Python", "AWS", "Leadership", "Communication", "Problem Solving", "SQL"];

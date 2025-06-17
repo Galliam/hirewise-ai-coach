@@ -9,6 +9,92 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      applications: {
+        Row: {
+          applicant_id: string | null
+          applied_at: string | null
+          id: string
+          job_id: string | null
+          status: string | null
+        }
+        Insert: {
+          applicant_id?: string | null
+          applied_at?: string | null
+          id?: string
+          job_id?: string | null
+          status?: string | null
+        }
+        Update: {
+          applicant_id?: string | null
+          applied_at?: string | null
+          id?: string
+          job_id?: string | null
+          status?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "applications_applicant_id_fkey"
+            columns: ["applicant_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "applications_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: false
+            referencedRelation: "jobs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      jobs: {
+        Row: {
+          created_at: string | null
+          department: string | null
+          description: string | null
+          id: string
+          job_type: string | null
+          location: string | null
+          recruiter_id: string | null
+          skills_required: string[] | null
+          status: string | null
+          title: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          department?: string | null
+          description?: string | null
+          id?: string
+          job_type?: string | null
+          location?: string | null
+          recruiter_id?: string | null
+          skills_required?: string[] | null
+          status?: string | null
+          title?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          department?: string | null
+          description?: string | null
+          id?: string
+          job_type?: string | null
+          location?: string | null
+          recruiter_id?: string | null
+          skills_required?: string[] | null
+          status?: string | null
+          title?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "jobs_recruiter_id_fkey"
+            columns: ["recruiter_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           created_at: string
