@@ -15,12 +15,26 @@ interface OnboardingStep5Props {
   isLast: boolean;
 }
 
+type PersonalityQuestion = {
+  id: string;
+  question: string;
+  trait: string;
+};
+
+type WorkStyleQuestion = {
+  id: string;
+  question: string;
+  options: { value: string; label: string; }[];
+};
+
+type Question = PersonalityQuestion | WorkStyleQuestion;
+
 const OnboardingStep5 = ({ onNext, onBack, profile }: OnboardingStep5Props) => {
   const { user } = useAuth();
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [answers, setAnswers] = useState<Record<string, string>>({});
 
-  const personalityQuestions = [
+  const personalityQuestions: PersonalityQuestion[] = [
     {
       id: 'extraversion_1',
       question: 'I enjoy being the center of attention in social situations.',
@@ -73,7 +87,7 @@ const OnboardingStep5 = ({ onNext, onBack, profile }: OnboardingStep5Props) => {
     }
   ];
 
-  const workStyleQuestions = [
+  const workStyleQuestions: WorkStyleQuestion[] = [
     {
       id: 'communication_style',
       question: 'What\'s your preferred communication style?',
@@ -96,7 +110,7 @@ const OnboardingStep5 = ({ onNext, onBack, profile }: OnboardingStep5Props) => {
     }
   ];
 
-  const allQuestions = [...personalityQuestions, ...workStyleQuestions];
+  const allQuestions: Question[] = [...personalityQuestions, ...workStyleQuestions];
 
   const handleAnswer = (value: string) => {
     setAnswers(prev => ({
@@ -134,8 +148,8 @@ const OnboardingStep5 = ({ onNext, onBack, profile }: OnboardingStep5Props) => {
       if (answer) {
         const scoreValue = parseInt(answer);
         const trait = q.trait + '_score';
-        if (scores[trait] !== undefined) {
-          scores[trait] = Math.round((scores[trait] + scoreValue) / 2);
+        if (scores[trait as keyof typeof scores] !== undefined) {
+          scores[trait as keyof typeof scores] = Math.round((scores[trait as keyof typeof scores] + scoreValue) / 2);
         }
       }
     });
@@ -190,7 +204,9 @@ const OnboardingStep5 = ({ onNext, onBack, profile }: OnboardingStep5Props) => {
   };
 
   const currentQ = allQuestions[currentQuestion];
-  const isPersonalityQuestion = personalityQuestions.includes(currentQ);
+  const isPersonalityQuestion = (question: Question): question is PersonalityQuestion => {
+    return 'trait' in question;
+  };
 
   return (
     <div className="space-y-6">
@@ -210,7 +226,7 @@ const OnboardingStep5 = ({ onNext, onBack, profile }: OnboardingStep5Props) => {
               {currentQ.question}
             </h4>
             
-            {isPersonalityQuestion ? (
+            {isPersonalityQuestion(currentQ) ? (
               <RadioGroup
                 value={answers[currentQ.id] || ''}
                 onValueChange={handleAnswer}
@@ -239,7 +255,7 @@ const OnboardingStep5 = ({ onNext, onBack, profile }: OnboardingStep5Props) => {
                 onValueChange={handleAnswer}
                 className="space-y-3"
               >
-                {currentQ.options?.map((option) => (
+                {currentQ.options.map((option) => (
                   <div key={option.value} className="flex items-center space-x-3">
                     <RadioGroupItem value={option.value} id={option.value} />
                     <Label htmlFor={option.value} className="font-normal">
