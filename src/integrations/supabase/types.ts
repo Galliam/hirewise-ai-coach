@@ -9,6 +9,57 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      application_activities: {
+        Row: {
+          activity_type: string
+          application_id: string | null
+          created_at: string | null
+          description: string | null
+          id: string
+          metadata: Json | null
+          new_status: Database["public"]["Enums"]["application_status"] | null
+          old_status: Database["public"]["Enums"]["application_status"] | null
+          recruiter_id: string | null
+        }
+        Insert: {
+          activity_type: string
+          application_id?: string | null
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          metadata?: Json | null
+          new_status?: Database["public"]["Enums"]["application_status"] | null
+          old_status?: Database["public"]["Enums"]["application_status"] | null
+          recruiter_id?: string | null
+        }
+        Update: {
+          activity_type?: string
+          application_id?: string | null
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          metadata?: Json | null
+          new_status?: Database["public"]["Enums"]["application_status"] | null
+          old_status?: Database["public"]["Enums"]["application_status"] | null
+          recruiter_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "application_activities_application_id_fkey"
+            columns: ["application_id"]
+            isOneToOne: false
+            referencedRelation: "applications"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "application_activities_recruiter_id_fkey"
+            columns: ["recruiter_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       applications: {
         Row: {
           applicant_id: string | null
@@ -44,6 +95,270 @@ export type Database = {
             columns: ["job_id"]
             isOneToOne: false
             referencedRelation: "jobs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      candidate_documents: {
+        Row: {
+          applicant_id: string | null
+          application_id: string | null
+          document_type: string
+          file_name: string
+          file_size: number | null
+          file_url: string
+          id: string
+          mime_type: string | null
+          uploaded_at: string | null
+        }
+        Insert: {
+          applicant_id?: string | null
+          application_id?: string | null
+          document_type: string
+          file_name: string
+          file_size?: number | null
+          file_url: string
+          id?: string
+          mime_type?: string | null
+          uploaded_at?: string | null
+        }
+        Update: {
+          applicant_id?: string | null
+          application_id?: string | null
+          document_type?: string
+          file_name?: string
+          file_size?: number | null
+          file_url?: string
+          id?: string
+          mime_type?: string | null
+          uploaded_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "candidate_documents_applicant_id_fkey"
+            columns: ["applicant_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "candidate_documents_application_id_fkey"
+            columns: ["application_id"]
+            isOneToOne: false
+            referencedRelation: "applications"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      interview_schedules: {
+        Row: {
+          application_id: string | null
+          candidate_feedback: string | null
+          created_at: string | null
+          duration_minutes: number | null
+          id: string
+          interview_type: string
+          interviewer_notes: string | null
+          location: string | null
+          scheduled_at: string
+          status: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          application_id?: string | null
+          candidate_feedback?: string | null
+          created_at?: string | null
+          duration_minutes?: number | null
+          id?: string
+          interview_type: string
+          interviewer_notes?: string | null
+          location?: string | null
+          scheduled_at: string
+          status?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          application_id?: string | null
+          candidate_feedback?: string | null
+          created_at?: string | null
+          duration_minutes?: number | null
+          id?: string
+          interview_type?: string
+          interviewer_notes?: string | null
+          location?: string | null
+          scheduled_at?: string
+          status?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "interview_schedules_application_id_fkey"
+            columns: ["application_id"]
+            isOneToOne: false
+            referencedRelation: "applications"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      job_matching_preferences: {
+        Row: {
+          best_contact_time: string | null
+          company_culture_weight: number | null
+          contact_preferences: string[] | null
+          created_at: string | null
+          deal_breakers: string[] | null
+          growth_opportunities_weight: number | null
+          id: string
+          job_seeker_id: string | null
+          location_weight: number | null
+          role_responsibilities_weight: number | null
+          salary_weight: number | null
+          updated_at: string | null
+          work_life_balance_weight: number | null
+        }
+        Insert: {
+          best_contact_time?: string | null
+          company_culture_weight?: number | null
+          contact_preferences?: string[] | null
+          created_at?: string | null
+          deal_breakers?: string[] | null
+          growth_opportunities_weight?: number | null
+          id?: string
+          job_seeker_id?: string | null
+          location_weight?: number | null
+          role_responsibilities_weight?: number | null
+          salary_weight?: number | null
+          updated_at?: string | null
+          work_life_balance_weight?: number | null
+        }
+        Update: {
+          best_contact_time?: string | null
+          company_culture_weight?: number | null
+          contact_preferences?: string[] | null
+          created_at?: string | null
+          deal_breakers?: string[] | null
+          growth_opportunities_weight?: number | null
+          id?: string
+          job_seeker_id?: string | null
+          location_weight?: number | null
+          role_responsibilities_weight?: number | null
+          salary_weight?: number | null
+          updated_at?: string | null
+          work_life_balance_weight?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "job_matching_preferences_job_seeker_id_fkey"
+            columns: ["job_seeker_id"]
+            isOneToOne: false
+            referencedRelation: "job_seeker_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      job_seeker_profiles: {
+        Row: {
+          availability: string | null
+          benefits_priorities: string[] | null
+          certifications: string[] | null
+          company_culture: string[] | null
+          company_sizes: string[] | null
+          company_types: string[] | null
+          created_at: string | null
+          currency: string | null
+          current_company: string | null
+          current_title: string | null
+          desired_job_title: string | null
+          desired_location: string[] | null
+          id: string
+          industries: string[] | null
+          job_seeker_status: string | null
+          job_type: string[] | null
+          languages: string[] | null
+          linkedin_url: string | null
+          onboarding_completed: boolean | null
+          onboarding_step: number | null
+          portfolio_url: string | null
+          resume_url: string | null
+          salary_max: number | null
+          salary_min: number | null
+          soft_skills: string[] | null
+          technical_skills: string[] | null
+          updated_at: string | null
+          user_id: string | null
+          work_environment: string[] | null
+          years_experience: number | null
+        }
+        Insert: {
+          availability?: string | null
+          benefits_priorities?: string[] | null
+          certifications?: string[] | null
+          company_culture?: string[] | null
+          company_sizes?: string[] | null
+          company_types?: string[] | null
+          created_at?: string | null
+          currency?: string | null
+          current_company?: string | null
+          current_title?: string | null
+          desired_job_title?: string | null
+          desired_location?: string[] | null
+          id?: string
+          industries?: string[] | null
+          job_seeker_status?: string | null
+          job_type?: string[] | null
+          languages?: string[] | null
+          linkedin_url?: string | null
+          onboarding_completed?: boolean | null
+          onboarding_step?: number | null
+          portfolio_url?: string | null
+          resume_url?: string | null
+          salary_max?: number | null
+          salary_min?: number | null
+          soft_skills?: string[] | null
+          technical_skills?: string[] | null
+          updated_at?: string | null
+          user_id?: string | null
+          work_environment?: string[] | null
+          years_experience?: number | null
+        }
+        Update: {
+          availability?: string | null
+          benefits_priorities?: string[] | null
+          certifications?: string[] | null
+          company_culture?: string[] | null
+          company_sizes?: string[] | null
+          company_types?: string[] | null
+          created_at?: string | null
+          currency?: string | null
+          current_company?: string | null
+          current_title?: string | null
+          desired_job_title?: string | null
+          desired_location?: string[] | null
+          id?: string
+          industries?: string[] | null
+          job_seeker_status?: string | null
+          job_type?: string[] | null
+          languages?: string[] | null
+          linkedin_url?: string | null
+          onboarding_completed?: boolean | null
+          onboarding_step?: number | null
+          portfolio_url?: string | null
+          resume_url?: string | null
+          salary_max?: number | null
+          salary_min?: number | null
+          soft_skills?: string[] | null
+          technical_skills?: string[] | null
+          updated_at?: string | null
+          user_id?: string | null
+          work_environment?: string[] | null
+          years_experience?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "job_seeker_profiles_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]
@@ -95,6 +410,62 @@ export type Database = {
           },
         ]
       }
+      personality_assessments: {
+        Row: {
+          agreeableness_score: number | null
+          assessment_responses: Json | null
+          communication_style: string | null
+          conscientiousness_score: number | null
+          created_at: string | null
+          extraversion_score: number | null
+          id: string
+          job_seeker_id: string | null
+          leadership_preference: string | null
+          neuroticism_score: number | null
+          openness_score: number | null
+          updated_at: string | null
+          work_style_traits: string[] | null
+        }
+        Insert: {
+          agreeableness_score?: number | null
+          assessment_responses?: Json | null
+          communication_style?: string | null
+          conscientiousness_score?: number | null
+          created_at?: string | null
+          extraversion_score?: number | null
+          id?: string
+          job_seeker_id?: string | null
+          leadership_preference?: string | null
+          neuroticism_score?: number | null
+          openness_score?: number | null
+          updated_at?: string | null
+          work_style_traits?: string[] | null
+        }
+        Update: {
+          agreeableness_score?: number | null
+          assessment_responses?: Json | null
+          communication_style?: string | null
+          conscientiousness_score?: number | null
+          created_at?: string | null
+          extraversion_score?: number | null
+          id?: string
+          job_seeker_id?: string | null
+          leadership_preference?: string | null
+          neuroticism_score?: number | null
+          openness_score?: number | null
+          updated_at?: string | null
+          work_style_traits?: string[] | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "personality_assessments_job_seeker_id_fkey"
+            columns: ["job_seeker_id"]
+            isOneToOne: false
+            referencedRelation: "job_seeker_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           created_at: string
@@ -125,6 +496,113 @@ export type Database = {
         }
         Relationships: []
       }
+      recruiter_notes: {
+        Row: {
+          application_id: string | null
+          created_at: string | null
+          id: string
+          is_private: boolean | null
+          note: string
+          recruiter_id: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          application_id?: string | null
+          created_at?: string | null
+          id?: string
+          is_private?: boolean | null
+          note: string
+          recruiter_id?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          application_id?: string | null
+          created_at?: string | null
+          id?: string
+          is_private?: boolean | null
+          note?: string
+          recruiter_id?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "recruiter_notes_application_id_fkey"
+            columns: ["application_id"]
+            isOneToOne: false
+            referencedRelation: "applications"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "recruiter_notes_recruiter_id_fkey"
+            columns: ["recruiter_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      skills_assessments: {
+        Row: {
+          adaptability_score: number | null
+          assessment_responses: Json | null
+          communication_score: number | null
+          created_at: string | null
+          creativity_score: number | null
+          development_areas: string[] | null
+          growth_mindset_score: number | null
+          id: string
+          job_seeker_id: string | null
+          leadership_score: number | null
+          learning_style: string[] | null
+          problem_solving_score: number | null
+          technical_aptitude_score: number | null
+          top_strengths: string[] | null
+          updated_at: string | null
+        }
+        Insert: {
+          adaptability_score?: number | null
+          assessment_responses?: Json | null
+          communication_score?: number | null
+          created_at?: string | null
+          creativity_score?: number | null
+          development_areas?: string[] | null
+          growth_mindset_score?: number | null
+          id?: string
+          job_seeker_id?: string | null
+          leadership_score?: number | null
+          learning_style?: string[] | null
+          problem_solving_score?: number | null
+          technical_aptitude_score?: number | null
+          top_strengths?: string[] | null
+          updated_at?: string | null
+        }
+        Update: {
+          adaptability_score?: number | null
+          assessment_responses?: Json | null
+          communication_score?: number | null
+          created_at?: string | null
+          creativity_score?: number | null
+          development_areas?: string[] | null
+          growth_mindset_score?: number | null
+          id?: string
+          job_seeker_id?: string | null
+          leadership_score?: number | null
+          learning_style?: string[] | null
+          problem_solving_score?: number | null
+          technical_aptitude_score?: number | null
+          top_strengths?: string[] | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "skills_assessments_job_seeker_id_fkey"
+            columns: ["job_seeker_id"]
+            isOneToOne: false
+            referencedRelation: "job_seeker_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
@@ -133,7 +611,7 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      application_status: "pending" | "approved" | "rejected"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -248,6 +726,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      application_status: ["pending", "approved", "rejected"],
+    },
   },
 } as const

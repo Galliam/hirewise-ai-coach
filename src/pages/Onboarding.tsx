@@ -1,523 +1,227 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Progress } from "@/components/ui/progress";
+import { useAuth } from "@/hooks/useAuth";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
-import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Check, ChevronDown } from "lucide-react";
-import { cn } from "@/lib/utils";
+import OnboardingStep1 from "@/components/onboarding/OnboardingStep1";
+import OnboardingStep2 from "@/components/onboarding/OnboardingStep2";
+import OnboardingStep3 from "@/components/onboarding/OnboardingStep3";
+import OnboardingStep4 from "@/components/onboarding/OnboardingStep4";
+import OnboardingStep5 from "@/components/onboarding/OnboardingStep5";
+import OnboardingStep6 from "@/components/onboarding/OnboardingStep6";
+import OnboardingStep7 from "@/components/onboarding/OnboardingStep7";
+
+const TOTAL_STEPS = 7;
 
 const Onboarding = () => {
-  const [step, setStep] = useState(1);
-  const [formData, setFormData] = useState({
-    jobTitle: "",
-    location: "",
-    company: "",
-    jobType: "",
-    preferences: [] as string[],
-    companyType: [] as string[],
-    culture: [] as string[],
-    salaryExpectation: "",
-    benefits: [] as string[],
-    personalityTraits: [] as string[],
-    strengths: [] as string[],
-  });
-  const [openJobSuggestions, setOpenJobSuggestions] = useState(false);
-  const [openLocationSuggestions, setOpenLocationSuggestions] = useState(false);
-  const [openCompanySuggestions, setOpenCompanySuggestions] = useState(false);
+  const { user } = useAuth();
+  const { toast } = useToast();
   const navigate = useNavigate();
+  const [currentStep, setCurrentStep] = useState(1);
+  const [loading, setLoading] = useState(true);
+  const [jobSeekerProfile, setJobSeekerProfile] = useState<any>(null);
 
-  // Mock data for suggestions
-  const jobSuggestions = [
-    "Software Engineer", "Product Manager", "Data Scientist", "UX/UI Designer", 
-    "Marketing Manager", "Sales Representative", "DevOps Engineer", "Business Analyst",
-    "Frontend Developer", "Backend Developer", "Full Stack Developer", "Machine Learning Engineer"
-  ];
+  useEffect(() => {
+    if (user) {
+      fetchJobSeekerProfile();
+    }
+  }, [user]);
 
-  const locationSuggestions = [
-    "San Francisco, CA", "New York, NY", "Seattle, WA", "Austin, TX", "Boston, MA",
-    "Los Angeles, CA", "Chicago, IL", "Denver, CO", "Remote", "London, UK"
-  ];
+  const fetchJobSeekerProfile = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('job_seeker_profiles')
+        .select('*')
+        .eq('user_id', user?.id)
+        .single();
 
-  const getCompaniesForLocation = (location: string) => {
-    const companiesByLocation: { [key: string]: string[] } = {
-      "San Francisco, CA": ["Google", "Meta", "Uber", "Airbnb", "Salesforce"],
-      "New York, NY": ["Goldman Sachs", "JPMorgan", "Bloomberg", "MongoDB", "Etsy"],
-      "Seattle, WA": ["Amazon", "Microsoft", "Boeing", "Expedia", "Zillow"],
-      "Austin, TX": ["Dell", "IBM", "Indeed", "HomeAway", "Bumble"],
-      "Remote": ["GitLab", "Automattic", "Buffer", "Zapier", "InVision"]
-    };
-    return companiesByLocation[location] || ["Apple", "Netflix", "Tesla", "Adobe", "Spotify"];
+      if (error && error.code !== 'PGRST116') {
+        throw error;
+      }
+
+      if (data) {
+        setJobSeekerProfile(data);
+        setCurrentStep(data.onboarding_step || 1);
+        
+        // If already completed, redirect to dashboard
+        if (data.onboarding_completed) {
+          navigate('/dashboard');
+          return;
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching job seeker profile:', error);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleNext = () => {
-    if (step < 6) {
-      setStep(step + 1);
+  const updateOnboardingStep = async (step: number, data: any = {}) => {
+    try {
+      const { error } = await supabase
+        .from('job_seeker_profiles')
+        .update({
+          ...data,
+          onboarding_step: step,
+          updated_at: new Date().toISOString()
+        })
+        .eq('user_id', user?.id);
+
+      if (error) throw error;
+
+      setJobSeekerProfile(prev => ({ ...prev, ...data, onboarding_step: step }));
+    } catch (error) {
+      console.error('Error updating onboarding step:', error);
+      toast({
+        title: "Error",
+        description: "Failed to save progress. Please try again.",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const completeOnboarding = async () => {
+    try {
+      const { error } = await supabase
+        .from('job_seeker_profiles')
+        .update({
+          onboarding_completed: true,
+          onboarding_step: TOTAL_STEPS,
+          updated_at: new Date().toISOString()
+        })
+        .eq('user_id', user?.id);
+
+      if (error) throw error;
+
+      toast({
+        title: "Onboarding Complete!",
+        description: "Welcome to Hirewise. Let's find you the perfect job!",
+      });
+
+      navigate('/dashboard');
+    } catch (error) {
+      console.error('Error completing onboarding:', error);
+      toast({
+        title: "Error",
+        description: "Failed to complete onboarding. Please try again.",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const handleNext = async (stepData?: any) => {
+    if (stepData) {
+      await updateOnboardingStep(currentStep + 1, stepData);
+    }
+    
+    if (currentStep < TOTAL_STEPS) {
+      setCurrentStep(currentStep + 1);
     } else {
-      navigate("/dashboard");
+      await completeOnboarding();
     }
   };
 
   const handleBack = () => {
-    if (step > 1) {
-      setStep(step - 1);
+    if (currentStep > 1) {
+      setCurrentStep(currentStep - 1);
     }
   };
 
-  const toggleSelection = (category: keyof typeof formData, value: string) => {
-    const current = formData[category] as string[];
-    const updated = current.includes(value) 
-      ? current.filter(item => item !== value)
-      : [...current, value];
-    
-    setFormData(prev => ({
-      ...prev,
-      [category]: updated
-    }));
-  };
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading your profile...</p>
+        </div>
+      </div>
+    );
+  }
 
   const renderStep = () => {
-    switch (step) {
+    const stepProps = {
+      onNext: handleNext,
+      onBack: handleBack,
+      profile: jobSeekerProfile,
+      isFirst: currentStep === 1,
+      isLast: currentStep === TOTAL_STEPS
+    };
+
+    switch (currentStep) {
       case 1:
-        return (
-          <div className="space-y-6">
-            <div>
-              <h2 className="text-2xl font-bold text-gray-900 mb-2">What are you looking for?</h2>
-            </div>
-            
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Job title</label>
-                <Popover open={openJobSuggestions} onOpenChange={setOpenJobSuggestions}>
-                  <PopoverTrigger asChild>
-                    <Button
-                      variant="outline"
-                      role="combobox"
-                      aria-expanded={openJobSuggestions}
-                      className="w-full justify-between"
-                    >
-                      {formData.jobTitle || "Select or type a job title..."}
-                      <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-full p-0">
-                    <Command>
-                      <CommandInput 
-                        placeholder="Search job titles..." 
-                        value={formData.jobTitle}
-                        onValueChange={(value) => setFormData(prev => ({ ...prev, jobTitle: value }))}
-                      />
-                      <CommandList>
-                        <CommandEmpty>No job title found.</CommandEmpty>
-                        <CommandGroup>
-                          {jobSuggestions
-                            .filter(job => job.toLowerCase().includes(formData.jobTitle.toLowerCase()))
-                            .map((job) => (
-                            <CommandItem
-                              key={job}
-                              value={job}
-                              onSelect={() => {
-                                setFormData(prev => ({ ...prev, jobTitle: job }));
-                                setOpenJobSuggestions(false);
-                              }}
-                            >
-                              <Check
-                                className={cn(
-                                  "mr-2 h-4 w-4",
-                                  formData.jobTitle === job ? "opacity-100" : "opacity-0"
-                                )}
-                              />
-                              {job}
-                            </CommandItem>
-                          ))}
-                        </CommandGroup>
-                      </CommandList>
-                    </Command>
-                  </PopoverContent>
-                </Popover>
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Location</label>
-                <Popover open={openLocationSuggestions} onOpenChange={setOpenLocationSuggestions}>
-                  <PopoverTrigger asChild>
-                    <Button
-                      variant="outline"
-                      role="combobox"
-                      aria-expanded={openLocationSuggestions}
-                      className="w-full justify-between"
-                    >
-                      {formData.location || "Select or type a location..."}
-                      <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-full p-0">
-                    <Command>
-                      <CommandInput 
-                        placeholder="Search locations..." 
-                        value={formData.location}
-                        onValueChange={(value) => setFormData(prev => ({ ...prev, location: value }))}
-                      />
-                      <CommandList>
-                        <CommandEmpty>No location found.</CommandEmpty>
-                        <CommandGroup>
-                          {locationSuggestions
-                            .filter(location => location.toLowerCase().includes(formData.location.toLowerCase()))
-                            .map((location) => (
-                            <CommandItem
-                              key={location}
-                              value={location}
-                              onSelect={() => {
-                                setFormData(prev => ({ ...prev, location: location, company: "" }));
-                                setOpenLocationSuggestions(false);
-                              }}
-                            >
-                              <Check
-                                className={cn(
-                                  "mr-2 h-4 w-4",
-                                  formData.location === location ? "opacity-100" : "opacity-0"
-                                )}
-                              />
-                              {location}
-                            </CommandItem>
-                          ))}
-                        </CommandGroup>
-                      </CommandList>
-                    </Command>
-                  </PopoverContent>
-                </Popover>
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Company (optional)</label>
-                <Popover open={openCompanySuggestions} onOpenChange={setOpenCompanySuggestions}>
-                  <PopoverTrigger asChild>
-                    <Button
-                      variant="outline"
-                      role="combobox"
-                      aria-expanded={openCompanySuggestions}
-                      className="w-full justify-between"
-                      disabled={!formData.location}
-                    >
-                      {formData.company || "Select a company..."}
-                      <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-full p-0">
-                    <Command>
-                      <CommandInput placeholder="Search companies..." />
-                      <CommandList>
-                        <CommandEmpty>No company found.</CommandEmpty>
-                        <CommandGroup>
-                          {getCompaniesForLocation(formData.location).map((company) => (
-                            <CommandItem
-                              key={company}
-                              value={company}
-                              onSelect={() => {
-                                setFormData(prev => ({ ...prev, company: company }));
-                                setOpenCompanySuggestions(false);
-                              }}
-                            >
-                              <Check
-                                className={cn(
-                                  "mr-2 h-4 w-4",
-                                  formData.company === company ? "opacity-100" : "opacity-0"
-                                )}
-                              />
-                              {company}
-                            </CommandItem>
-                          ))}
-                        </CommandGroup>
-                      </CommandList>
-                    </Command>
-                  </PopoverContent>
-                </Popover>
-              </div>
-            </div>
-          </div>
-        );
-      
+        return <OnboardingStep1 {...stepProps} />;
       case 2:
-        const jobRoles = ["Software Engineer", "Product Manager", "Data Scientist", "UX/UI Designer", "Marketing Specialist"];
-        const companyTypes = ["Startup", "Large Corporation", "Non-Profit", "Government", "Consulting Firm"];
-        const cultures = ["Fast-paced", "Collaborative", "Remote-friendly"];
-        
-        return (
-          <div className="space-y-6">
-            <div>
-              <h2 className="text-2xl font-bold text-gray-900 mb-4">Your Preferences</h2>
-            </div>
-            
-            <div>
-              <h3 className="text-lg font-medium text-gray-900 mb-3">What kind of job are you looking for?</h3>
-              <div className="grid grid-cols-2 gap-3">
-                {jobRoles.map((role) => (
-                  <button
-                    key={role}
-                    onClick={() => toggleSelection("preferences", role)}
-                    className={`p-3 rounded-lg border text-sm transition-colors ${
-                      formData.preferences.includes(role)
-                        ? "bg-blue-50 border-blue-200 text-blue-700"
-                        : "bg-white border-gray-200 text-gray-700 hover:bg-gray-50"
-                    }`}
-                  >
-                    {role}
-                  </button>
-                ))}
-              </div>
-            </div>
-            
-            <div>
-              <h3 className="text-lg font-medium text-gray-900 mb-3">What type of company are you interested in?</h3>
-              <div className="grid grid-cols-2 gap-3">
-                {companyTypes.map((type) => (
-                  <button
-                    key={type}
-                    onClick={() => toggleSelection("companyType", type)}
-                    className={`p-3 rounded-lg border text-sm transition-colors ${
-                      formData.companyType.includes(type)
-                        ? "bg-blue-50 border-blue-200 text-blue-700"
-                        : "bg-white border-gray-200 text-gray-700 hover:bg-gray-50"
-                    }`}
-                  >
-                    {type}
-                  </button>
-                ))}
-              </div>
-            </div>
-            
-            <div>
-              <h3 className="text-lg font-medium text-gray-900 mb-3">What kind of company culture do you prefer?</h3>
-              <div className="grid grid-cols-2 gap-3">
-                {cultures.map((culture) => (
-                  <button
-                    key={culture}
-                    onClick={() => toggleSelection("culture", culture)}
-                    className={`p-3 rounded-lg border text-sm transition-colors ${
-                      formData.culture.includes(culture)
-                        ? "bg-blue-50 border-blue-200 text-blue-700"
-                        : "bg-white border-gray-200 text-gray-700 hover:bg-gray-50"
-                    }`}
-                  >
-                    {culture}
-                  </button>
-                ))}
-              </div>
-            </div>
-          </div>
-        );
-
+        return <OnboardingStep2 {...stepProps} />;
       case 3:
-        const benefitOptions = ["Health Insurance", "401k Match", "Flexible PTO", "Remote Work", "Stock Options", "Learning Budget"];
-        
-        return (
-          <div className="space-y-6">
-            <div>
-              <h2 className="text-2xl font-bold text-gray-900 mb-2">Compensation & Benefits</h2>
-              <p className="text-gray-600">Help us understand your expectations</p>
-            </div>
-            
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Expected Salary Range</label>
-                <Input 
-                  placeholder="e.g. $80,000 - $120,000"
-                  value={formData.salaryExpectation}
-                  onChange={(e) => setFormData(prev => ({ ...prev, salaryExpectation: e.target.value }))}
-                />
-              </div>
-              
-              <div>
-                <h3 className="text-lg font-medium text-gray-900 mb-3">Which benefits are most important to you?</h3>
-                <div className="grid grid-cols-2 gap-3">
-                  {benefitOptions.map((benefit) => (
-                    <button
-                      key={benefit}
-                      onClick={() => toggleSelection("benefits", benefit)}
-                      className={`p-3 rounded-lg border text-sm transition-colors ${
-                        formData.benefits.includes(benefit)
-                          ? "bg-blue-50 border-blue-200 text-blue-700"
-                          : "bg-white border-gray-200 text-gray-700 hover:bg-gray-50"
-                      }`}
-                    >
-                      {benefit}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </div>
-        );
-
+        return <OnboardingStep3 {...stepProps} />;
       case 4:
-        const personalityTraits = ["Analytical", "Creative", "Detail-oriented", "Big picture", "Independent", "Collaborative"];
-        
-        return (
-          <div className="space-y-6">
-            <div>
-              <h2 className="text-2xl font-bold text-gray-900 mb-2">Personality Assessment</h2>
-              <p className="text-gray-600">Select traits that best describe you</p>
-            </div>
-            
-            <div>
-              <h3 className="text-lg font-medium text-gray-900 mb-3">How would you describe your work style?</h3>
-              <div className="grid grid-cols-2 gap-3">
-                {personalityTraits.map((trait) => (
-                  <button
-                    key={trait}
-                    onClick={() => toggleSelection("personalityTraits", trait)}
-                    className={`p-3 rounded-lg border text-sm transition-colors ${
-                      formData.personalityTraits.includes(trait)
-                        ? "bg-blue-50 border-blue-200 text-blue-700"
-                        : "bg-white border-gray-200 text-gray-700 hover:bg-gray-50"
-                    }`}
-                  >
-                    {trait}
-                  </button>
-                ))}
-              </div>
-            </div>
-            
-            <div className="space-y-4">
-              <div>
-                <h3 className="text-lg font-medium text-gray-900 mb-2">Quick Questions</h3>
-                <div className="space-y-3">
-                  <div className="p-4 border rounded-lg">
-                    <p className="text-sm text-gray-700 mb-2">I prefer working in teams rather than alone</p>
-                    <div className="flex space-x-2">
-                      {["Strongly Disagree", "Disagree", "Neutral", "Agree", "Strongly Agree"].map((option) => (
-                        <button key={option} className="px-3 py-1 text-xs border rounded hover:bg-gray-50">
-                          {option}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                  
-                  <div className="p-4 border rounded-lg">
-                    <p className="text-sm text-gray-700 mb-2">I enjoy taking on leadership responsibilities</p>
-                    <div className="flex space-x-2">
-                      {["Strongly Disagree", "Disagree", "Neutral", "Agree", "Strongly Agree"].map((option) => (
-                        <button key={option} className="px-3 py-1 text-xs border rounded hover:bg-gray-50">
-                          {option}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        );
-
+        return <OnboardingStep4 {...stepProps} />;
       case 5:
-        const strengthOptions = ["Problem Solving", "Communication", "Leadership", "Technical Skills", "Creativity", "Time Management"];
-        
-        return (
-          <div className="space-y-6">
-            <div>
-              <h2 className="text-2xl font-bold text-gray-900 mb-2">Potential Assessment</h2>
-              <p className="text-gray-600">Identify your key strengths and growth areas</p>
-            </div>
-            
-            <div>
-              <h3 className="text-lg font-medium text-gray-900 mb-3">What are your top strengths?</h3>
-              <div className="grid grid-cols-2 gap-3">
-                {strengthOptions.map((strength) => (
-                  <button
-                    key={strength}
-                    onClick={() => toggleSelection("strengths", strength)}
-                    className={`p-3 rounded-lg border text-sm transition-colors ${
-                      formData.strengths.includes(strength)
-                        ? "bg-blue-50 border-blue-200 text-blue-700"
-                        : "bg-white border-gray-200 text-gray-700 hover:bg-gray-50"
-                    }`}
-                  >
-                    {strength}
-                  </button>
-                ))}
-              </div>
-            </div>
-            
-            <div className="space-y-4">
-              <div>
-                <h3 className="text-lg font-medium text-gray-900 mb-2">Scenario Questions</h3>
-                <div className="space-y-3">
-                  <div className="p-4 border rounded-lg">
-                    <p className="text-sm text-gray-700 mb-2">When facing a challenging project, I typically:</p>
-                    <div className="space-y-2">
-                      {[
-                        "Break it down into smaller tasks",
-                        "Seek help from colleagues",
-                        "Research best practices first",
-                        "Dive in and learn as I go"
-                      ].map((option) => (
-                        <button key={option} className="block w-full text-left px-3 py-2 text-sm border rounded hover:bg-gray-50">
-                          {option}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        );
-      
+        return <OnboardingStep5 {...stepProps} />;
       case 6:
-        return (
-          <div className="space-y-6 text-center">
-            <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto">
-              <span className="text-green-600 text-2xl">✓</span>
-            </div>
-            <div>
-              <h2 className="text-2xl font-bold text-gray-900 mb-2">All Set!</h2>
-              <p className="text-gray-600">Your AI recruiting agent is ready to find the perfect opportunities for you based on your comprehensive profile.</p>
-            </div>
-          </div>
-        );
-      
+        return <OnboardingStep6 {...stepProps} />;
+      case 7:
+        return <OnboardingStep7 {...stepProps} />;
       default:
-        return null;
+        return <OnboardingStep1 {...stepProps} />;
     }
+  };
+
+  const getStepTitle = () => {
+    const titles = [
+      "Welcome to Hirewise",
+      "Basic Information",
+      "Job Preferences", 
+      "Company & Culture",
+      "Skills & Experience",
+      "Personality Assessment",
+      "Final Preferences"
+    ];
+    return titles[currentStep - 1];
+  };
+
+  const getStepDescription = () => {
+    const descriptions = [
+      "Let's get you set up for success",
+      "Tell us about your background",
+      "What kind of role are you looking for?",
+      "What work environment suits you best?",
+      "Share your skills and expertise",
+      "Help us understand your work style",
+      "Set your matching preferences"
+    ];
+    return descriptions[currentStep - 1];
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 p-4">
-      <div className="max-w-md mx-auto pt-8">
-        <div className="mb-8">
-          <div className="flex items-center justify-between mb-4">
-            {step > 1 && (
-              <button onClick={handleBack} className="text-gray-600">
-                ← Back
-              </button>
-            )}
-            <div className="flex-1" />
-          </div>
-          
-          <div className="mb-6">
-            <div className="flex justify-between text-sm text-gray-500 mb-2">
-              <span>Step {step} of 6</span>
-            </div>
-            <div className="w-full bg-gray-200 rounded-full h-2">
-              <div 
-                className="bg-blue-600 h-2 rounded-full transition-all duration-300"
-                style={{ width: `${(step / 6) * 100}%` }}
+    <div className="min-h-screen bg-gray-50 py-8">
+      <div className="max-w-2xl mx-auto px-4">
+        <Card className="shadow-lg">
+          <CardHeader className="text-center">
+            <CardTitle className="text-2xl font-bold text-gray-900">
+              {getStepTitle()}
+            </CardTitle>
+            <CardDescription className="text-gray-600">
+              {getStepDescription()}
+            </CardDescription>
+            <div className="mt-4">
+              <Progress 
+                value={(currentStep / TOTAL_STEPS) * 100} 
+                className="w-full h-2"
               />
+              <p className="text-sm text-gray-500 mt-2">
+                Step {currentStep} of {TOTAL_STEPS}
+              </p>
             </div>
-          </div>
-        </div>
-        
-        <div className="bg-white rounded-xl p-6 shadow-sm mb-6">
-          {renderStep()}
-        </div>
-        
-        <Button 
-          onClick={handleNext}
-          className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg"
-        >
-          {step === 6 ? "Get Started" : "Next"}
-        </Button>
+          </CardHeader>
+          <CardContent>
+            {renderStep()}
+          </CardContent>
+        </Card>
       </div>
     </div>
   );
