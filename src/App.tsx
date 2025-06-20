@@ -15,6 +15,7 @@ import Profile from "./pages/Profile";
 import Jobs from "./pages/Jobs";
 import JobDetail from "./pages/JobDetail";
 import Chat from "./pages/Chat";
+import Messages from "./pages/Messages";
 import Coach from "./pages/Coach";
 import Onboarding from "./pages/Onboarding";
 import NotFound from "./pages/NotFound";
@@ -116,6 +117,14 @@ const App = () => (
               element={
                 <ProtectedRoute userType="job_seeker">
                   <Chat />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/messages" 
+              element={
+                <ProtectedRoute userType="job_seeker">
+                  <Messages />
                 </ProtectedRoute>
               } 
             />
