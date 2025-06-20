@@ -63,24 +63,30 @@ export type Database = {
       applications: {
         Row: {
           applicant_id: string | null
+          application_insights: Json | null
           applied_at: string | null
           id: string
           job_id: string | null
           status: string | null
+          updated_at: string | null
         }
         Insert: {
           applicant_id?: string | null
+          application_insights?: Json | null
           applied_at?: string | null
           id?: string
           job_id?: string | null
           status?: string | null
+          updated_at?: string | null
         }
         Update: {
           applicant_id?: string | null
+          application_insights?: Json | null
           applied_at?: string | null
           id?: string
           job_id?: string | null
           status?: string | null
+          updated_at?: string | null
         }
         Relationships: [
           {
@@ -410,6 +416,50 @@ export type Database = {
           },
         ]
       }
+      messages: {
+        Row: {
+          application_id: string | null
+          created_at: string | null
+          id: string
+          message_text: string
+          message_type: string | null
+          read_at: string | null
+          recipient_id: string
+          sender_id: string
+          updated_at: string | null
+        }
+        Insert: {
+          application_id?: string | null
+          created_at?: string | null
+          id?: string
+          message_text: string
+          message_type?: string | null
+          read_at?: string | null
+          recipient_id: string
+          sender_id: string
+          updated_at?: string | null
+        }
+        Update: {
+          application_id?: string | null
+          created_at?: string | null
+          id?: string
+          message_text?: string
+          message_type?: string | null
+          read_at?: string | null
+          recipient_id?: string
+          sender_id?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "messages_application_id_fkey"
+            columns: ["application_id"]
+            isOneToOne: false
+            referencedRelation: "applications"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       personality_assessments: {
         Row: {
           agreeableness_score: number | null
@@ -605,7 +655,27 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      conversation_summaries: {
+        Row: {
+          application_id: string | null
+          conversation_id: string | null
+          last_message: string | null
+          last_message_at: string | null
+          read_at: string | null
+          recipient_id: string | null
+          sender_id: string | null
+          unread_count: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "messages_application_id_fkey"
+            columns: ["application_id"]
+            isOneToOne: false
+            referencedRelation: "applications"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Functions: {
       [_ in never]: never
