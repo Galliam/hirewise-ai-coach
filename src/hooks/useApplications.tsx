@@ -23,15 +23,15 @@ export interface Application {
     email: string;
   };
   job_seeker_profile?: {
-    desired_job_title: string;
-    years_experience: number;
-    technical_skills: string[];
-    soft_skills: string[];
-    salary_min: number;
-    salary_max: number;
-    current_company: string;
-    current_title: string;
-  };
+    desired_job_title?: string;
+    years_experience?: number;
+    technical_skills?: string[];
+    soft_skills?: string[];
+    salary_min?: number;
+    salary_max?: number;
+    current_company?: string;
+    current_title?: string;
+  } | null;
 }
 
 export const useApplications = () => {
@@ -49,22 +49,38 @@ export const useApplications = () => {
         .select(`
           *,
           job:jobs(title, department, location),
-          applicant:profiles!applications_applicant_id_fkey(id, first_name, last_name, email),
-          job_seeker_profile:job_seeker_profiles!job_seeker_profiles_user_id_fkey(
-            desired_job_title,
-            years_experience,
-            technical_skills,
-            soft_skills,
-            salary_min,
-            salary_max,
-            current_company,
-            current_title
-          )
+          applicant:profiles!applications_applicant_id_fkey(id, first_name, last_name, email)
         `)
         .order('applied_at', { ascending: false });
 
       if (error) throw error;
-      setApplications(data || []);
+
+      // Fetch job seeker profiles separately to avoid query errors
+      const applicationsWithProfiles = await Promise.all(
+        (data || []).map(async (app) => {
+          const { data: profileData } = await supabase
+            .from('job_seeker_profiles')
+            .select(`
+              desired_job_title,
+              years_experience,
+              technical_skills,
+              soft_skills,
+              salary_min,
+              salary_max,
+              current_company,
+              current_title
+            `)
+            .eq('user_id', app.applicant_id)
+            .maybeSingle();
+
+          return {
+            ...app,
+            job_seeker_profile: profileData
+          };
+        })
+      );
+
+      setApplications(applicationsWithProfiles);
     } catch (error) {
       console.error('Error fetching applications:', error);
     } finally {
