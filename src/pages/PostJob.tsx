@@ -60,7 +60,7 @@ const PostJob = () => {
           description: `${formData.description}\n\nRequirements:\n${formData.requirements}${formData.benefits ? `\n\nBenefits:\n${formData.benefits}` : ''}`,
           skills_required: formData.skills,
           recruiter_id: user.id,
-          status: 'active'
+          status: 'draft'
         })
         .select()
         .single();
