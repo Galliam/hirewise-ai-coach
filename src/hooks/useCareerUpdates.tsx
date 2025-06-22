@@ -13,6 +13,11 @@ export interface CareerUpdate {
   created_at: string;
 }
 
+// Type guard to ensure update_type is valid
+const isValidUpdateType = (type: string): type is CareerUpdate['update_type'] => {
+  return ['job_change', 'promotion', 'skill_added', 'certification'].includes(type);
+};
+
 export const useCareerUpdates = () => {
   const { user } = useAuth();
   const [updates, setUpdates] = useState<CareerUpdate[]>([]);
@@ -37,7 +42,16 @@ export const useCareerUpdates = () => {
       }
 
       console.log('Fetched career updates:', data);
-      setUpdates(data || []);
+      
+      // Transform and validate the data
+      const validUpdates: CareerUpdate[] = (data || []).filter((update: any) => {
+        return isValidUpdateType(update.update_type);
+      }).map((update: any) => ({
+        ...update,
+        update_type: update.update_type as CareerUpdate['update_type']
+      }));
+      
+      setUpdates(validUpdates);
     } catch (error) {
       console.error('Error in fetchUpdates:', error);
     } finally {

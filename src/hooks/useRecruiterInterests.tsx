@@ -23,6 +23,11 @@ export interface RecruiterInterest {
   };
 }
 
+// Type guard to ensure status is valid
+const isValidStatus = (status: string): status is RecruiterInterest['status'] => {
+  return ['pending', 'accepted', 'declined'].includes(status);
+};
+
 export const useRecruiterInterests = () => {
   const { user, userProfile } = useAuth();
   const [interests, setInterests] = useState<RecruiterInterest[]>([]);
@@ -59,7 +64,16 @@ export const useRecruiterInterests = () => {
       }
 
       console.log('Fetched interests:', data);
-      setInterests(data || []);
+      
+      // Transform and validate the data
+      const validInterests: RecruiterInterest[] = (data || []).filter((interest: any) => {
+        return isValidStatus(interest.status);
+      }).map((interest: any) => ({
+        ...interest,
+        status: interest.status as RecruiterInterest['status']
+      }));
+      
+      setInterests(validInterests);
     } catch (error) {
       console.error('Error in fetchInterests:', error);
     } finally {
