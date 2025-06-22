@@ -1,185 +1,199 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import BottomNavigation from "@/components/BottomNavigation";
-import { useNavigate } from "react-router-dom";
+import RecruiterBottomNavigation from "@/components/RecruiterBottomNavigation";
+import UserMenu from "@/components/UserMenu";
+import ExpressInterestDialog from "@/components/ExpressInterestDialog";
+import { useRecruiterInterests } from "@/hooks/useRecruiterInterests";
+import { Search, MapPin, Briefcase, Star, Heart } from "lucide-react";
 
 const Candidates = () => {
-  const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedStage, setSelectedStage] = useState("all");
+  const { interests, getInterestScore } = useRecruiterInterests();
+  const [candidateScores, setCandidateScores] = useState<{[key: string]: number}>({});
 
-  const candidates = [
-    { 
-      id: 1, 
-      name: "Sarah Chen", 
-      role: "Software Engineer", 
-      match: 95, 
-      status: "New", 
-      applied: "2 hours ago",
-      skills: ["React", "Python", "AWS"],
-      experience: "5 years"
+  // Mock candidates data - in real app this would come from your candidates API
+  const mockCandidates = [
+    {
+      id: "candidate-1",
+      name: "Sarah Chen",
+      title: "Senior Software Engineer",
+      location: "San Francisco, CA",
+      experience: "5+ years",
+      skills: ["React", "Node.js", "Python", "AWS"],
+      avatar: "👩‍💻",
+      matchScore: 92
     },
-    { 
-      id: 2, 
-      name: "Mike Johnson", 
-      role: "Product Manager", 
-      match: 88, 
-      status: "Screening", 
-      applied: "1 day ago",
-      skills: ["Product Strategy", "Analytics", "Leadership"],
-      experience: "7 years"
+    {
+      id: "candidate-2", 
+      name: "Mike Johnson",
+      title: "Product Manager",
+      location: "Remote",
+      experience: "7+ years",
+      skills: ["Product Strategy", "Analytics", "Agile", "Leadership"],
+      avatar: "👨‍💼",
+      matchScore: 88
     },
-    { 
-      id: 3, 
-      name: "Emily Rodriguez", 
-      role: "UX Designer", 
-      match: 92, 
-      status: "Interview", 
-      applied: "3 days ago",
-      skills: ["Figma", "User Research", "Prototyping"],
-      experience: "4 years"
-    },
-    { 
-      id: 4, 
-      name: "David Kim", 
-      role: "Data Scientist", 
-      match: 89, 
-      status: "Technical Review", 
-      applied: "5 days ago",
-      skills: ["Machine Learning", "SQL", "Python"],
-      experience: "6 years"
-    },
+    {
+      id: "candidate-3",
+      name: "Emily Rodriguez",
+      title: "UX Designer",
+      location: "New York, NY",
+      experience: "4+ years", 
+      skills: ["Figma", "User Research", "Prototyping", "Design Systems"],
+      avatar: "👩‍🎨",
+      matchScore: 85
+    }
   ];
 
-  const stages = ["all", "New", "Screening", "Interview", "Technical Review", "Offer"];
+  useEffect(() => {
+    // Calculate interest scores for all candidates
+    const fetchScores = async () => {
+      const scores: {[key: string]:number} = {};
+      for (const candidate of mockCandidates) {
+        scores[candidate.id] = await getInterestScore(candidate.id);
+      }
+      setCandidateScores(scores);
+    };
+    
+    fetchScores();
+  }, []);
 
-  const filteredCandidates = candidates.filter(candidate => {
-    const matchesSearch = candidate.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         candidate.role.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesStage = selectedStage === "all" || candidate.status === selectedStage;
-    return matchesSearch && matchesStage;
-  });
-
-  const moveCandidate = (candidateId: number, newStage: string) => {
-    // In a real app, this would update the candidate's status
-    console.log(`Moving candidate ${candidateId} to ${newStage}`);
+  // Check if recruiter has already expressed interest in candidate
+  const hasExpressedInterest = (candidateId: string) => {
+    return interests.some(interest => interest.candidate_id === candidateId);
   };
+
+  const filteredCandidates = mockCandidates.filter(candidate =>
+    candidate.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    candidate.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    candidate.skills.some(skill => skill.toLowerCase().includes(searchTerm.toLowerCase()))
+  );
 
   return (
     <div className="min-h-screen bg-gray-50 pb-20">
       <div className="max-w-md mx-auto">
         <div className="bg-white px-4 py-6 shadow-sm">
-          <div className="flex items-center space-x-3 mb-4">
-            <button onClick={() => navigate("/recruiter-dashboard")} className="text-gray-600">
-              ← Back
-            </button>
-            <h1 className="text-xl font-bold text-gray-900">Candidates</h1>
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <h1 className="text-xl font-bold text-gray-900">Candidates</h1>
+              <p className="text-gray-600">Discover talented candidates</p>
+            </div>
+            <UserMenu />
           </div>
           
-          <div className="space-y-3">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
             <Input
+              type="text"
               placeholder="Search candidates..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-10"
             />
-            
-            <div className="flex space-x-2 overflow-x-auto">
-              {stages.map((stage) => (
-                <button
-                  key={stage}
-                  onClick={() => setSelectedStage(stage)}
-                  className={`px-3 py-1 rounded-full text-sm whitespace-nowrap ${
-                    selectedStage === stage
-                      ? "bg-blue-600 text-white"
-                      : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-                  }`}
-                >
-                  {stage === "all" ? "All" : stage}
-                </button>
-              ))}
-            </div>
           </div>
         </div>
-        
-        <div className="p-4 space-y-4">
-          {filteredCandidates.map((candidate) => (
-            <div key={candidate.id} className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
-              <div className="flex justify-between items-start mb-3">
-                <div className="flex items-center space-x-3">
-                  <div className="w-12 h-12 bg-gray-200 rounded-full flex items-center justify-center">
-                    <span className="text-gray-600 text-lg">👤</span>
+
+        <div className="p-4">
+          <div className="flex items-center justify-between mb-4">
+            <p className="text-sm text-gray-600">
+              {filteredCandidates.length} candidate{filteredCandidates.length !== 1 ? 's' : ''} found
+            </p>
+            <Button variant="outline" size="sm">
+              Filters
+            </Button>
+          </div>
+
+          <div className="space-y-4">
+            {filteredCandidates.map((candidate) => {
+              const interestScore = candidateScores[candidate.id] || 0;
+              const alreadyInterested = hasExpressedInterest(candidate.id);
+              
+              return (
+                <div key={candidate.id} className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
+                  <div className="flex items-start space-x-3 mb-3">
+                    <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
+                      <span className="text-xl">{candidate.avatar}</span>
+                    </div>
+                    <div className="flex-1">
+                      <div className="flex items-start justify-between">
+                        <div>
+                          <h3 className="font-semibold text-gray-900">{candidate.name}</h3>
+                          <p className="text-sm text-gray-600">{candidate.title}</p>
+                        </div>
+                        <div className="flex items-center space-x-1">
+                          <Star className="w-4 h-4 text-yellow-500 fill-current" />
+                          <span className="text-sm font-medium text-gray-700">{candidate.matchScore}%</span>
+                        </div>
+                      </div>
+                      
+                      <div className="flex items-center space-x-4 mt-2 text-sm text-gray-500">
+                        <div className="flex items-center space-x-1">
+                          <MapPin className="w-3 h-3" />
+                          <span>{candidate.location}</span>
+                        </div>
+                        <div className="flex items-center space-x-1">
+                          <Briefcase className="w-3 h-3" />
+                          <span>{candidate.experience}</span>
+                        </div>
+                      </div>
+                    </div>
                   </div>
-                  <div className="flex-1">
-                    <h3 className="font-semibold text-gray-900">{candidate.name}</h3>
-                    <p className="text-sm text-gray-600">{candidate.role}</p>
-                    <p className="text-xs text-gray-500">{candidate.experience} experience</p>
+                  
+                  <div className="flex flex-wrap gap-2 mb-3">
+                    {candidate.skills.slice(0, 3).map((skill, index) => (
+                      <span 
+                        key={index}
+                        className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded-full"
+                      >
+                        {skill}
+                      </span>
+                    ))}
+                    {candidate.skills.length > 3 && (
+                      <span className="text-xs text-gray-500">
+                        +{candidate.skills.length - 3} more
+                      </span>
+                    )}
+                  </div>
+                  
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-2">
+                      {interestScore > 0 && (
+                        <div className="flex items-center space-x-1">
+                          <Heart className="w-4 h-4 text-pink-500 fill-current" />
+                          <span className="text-xs text-pink-600 font-medium">
+                            {interestScore} recruiter{interestScore > 1 ? 's' : ''} interested
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                    
+                    <div className="flex space-x-2">
+                      <Button size="sm" variant="outline">
+                        View Profile
+                      </Button>
+                      {alreadyInterested ? (
+                        <Button size="sm" variant="outline" disabled>
+                          <Heart className="w-4 h-4 mr-2 fill-current text-pink-500" />
+                          Interested
+                        </Button>
+                      ) : (
+                        <ExpressInterestDialog 
+                          candidateId={candidate.id}
+                          candidateName={candidate.name}
+                        />
+                      )}
+                    </div>
                   </div>
                 </div>
-                <div className="text-right">
-                  <div className="text-xl font-bold text-blue-600">{candidate.match}%</div>
-                  <span className="text-xs text-gray-500">match</span>
-                </div>
-              </div>
-              
-              <div className="mb-3">
-                <div className="flex flex-wrap gap-1">
-                  {candidate.skills.slice(0, 3).map((skill, index) => (
-                    <span key={index} className="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded">
-                      {skill}
-                    </span>
-                  ))}
-                </div>
-              </div>
-              
-              <div className="flex items-center justify-between mb-3">
-                <span className={`text-xs px-2 py-1 rounded-full ${
-                  candidate.status === "New" 
-                    ? "bg-blue-100 text-blue-700"
-                    : candidate.status === "Screening"
-                    ? "bg-yellow-100 text-yellow-700"
-                    : candidate.status === "Interview"
-                    ? "bg-green-100 text-green-700"
-                    : "bg-purple-100 text-purple-700"
-                }`}>
-                  {candidate.status}
-                </span>
-                <span className="text-xs text-gray-500">Applied: {candidate.applied}</span>
-              </div>
-              
-              <div className="grid grid-cols-3 gap-2">
-                <Button size="sm" variant="outline" className="text-xs">
-                  View Profile
-                </Button>
-                <Button size="sm" className="bg-blue-600 hover:bg-blue-700 text-xs">
-                  Message
-                </Button>
-                <select 
-                  onChange={(e) => moveCandidate(candidate.id, e.target.value)}
-                  className="text-xs px-2 py-1 border border-gray-300 rounded"
-                  defaultValue=""
-                >
-                  <option value="" disabled>Move to...</option>
-                  <option value="Screening">Screening</option>
-                  <option value="Interview">Interview</option>
-                  <option value="Technical Review">Technical Review</option>
-                  <option value="Offer">Offer</option>
-                  <option value="Rejected">Reject</option>
-                </select>
-              </div>
-            </div>
-          ))}
-          
-          {filteredCandidates.length === 0 && (
-            <div className="text-center py-8">
-              <p className="text-gray-500">No candidates found</p>
-            </div>
-          )}
+              );
+            })}
+          </div>
         </div>
       </div>
       
-      <BottomNavigation />
+      <RecruiterBottomNavigation />
     </div>
   );
 };

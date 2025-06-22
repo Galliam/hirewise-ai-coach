@@ -156,6 +156,44 @@ export type Database = {
           },
         ]
       }
+      career_updates: {
+        Row: {
+          candidate_id: string
+          company: string | null
+          created_at: string
+          description: string | null
+          id: string
+          title: string
+          update_type: string
+        }
+        Insert: {
+          candidate_id: string
+          company?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          title: string
+          update_type: string
+        }
+        Update: {
+          candidate_id?: string
+          company?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          title?: string
+          update_type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "career_updates_candidate_id_fkey"
+            columns: ["candidate_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       interview_schedules: {
         Row: {
           application_id: string | null
@@ -546,6 +584,51 @@ export type Database = {
         }
         Relationships: []
       }
+      recruiter_interests: {
+        Row: {
+          candidate_id: string
+          created_at: string
+          id: string
+          message: string | null
+          recruiter_id: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          candidate_id: string
+          created_at?: string
+          id?: string
+          message?: string | null
+          recruiter_id: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          candidate_id?: string
+          created_at?: string
+          id?: string
+          message?: string | null
+          recruiter_id?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "recruiter_interests_candidate_id_fkey"
+            columns: ["candidate_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "recruiter_interests_recruiter_id_fkey"
+            columns: ["recruiter_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       recruiter_notes: {
         Row: {
           application_id: string | null
@@ -678,7 +761,10 @@ export type Database = {
       }
     }
     Functions: {
-      [_ in never]: never
+      calculate_interest_score: {
+        Args: { candidate_profile_id: string }
+        Returns: number
+      }
     }
     Enums: {
       application_status: "pending" | "approved" | "rejected"
